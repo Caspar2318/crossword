@@ -55,7 +55,7 @@ export default function HomePage() {
   const [copySuccess, setCopySuccess] = useState(false);
 
   function getRandomWordCount() {
-    return Math.floor(Math.random() * 11) + 8;
+    return Math.floor(Math.random() * 5) + 8;
   }
 
   function handleAnswerChange(key: string, value: string) {
