@@ -413,7 +413,7 @@ export default function HomePage() {
           <div className="animate-[popIn_0.2s_ease-out] rounded-3xl border-4 border-black bg-white px-8 py-6 shadow-[8px_8px_0_#000]">
             <p className="text-3xl font-black text-center">Link Copied!</p>
             <p className="mt-2 text-center text-slate-600 font-semibold">
-              Share it with your students.
+              Share it with friends.
             </p>
           </div>
         </div>
