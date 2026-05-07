@@ -1,14 +1,12 @@
 type CompletionModalProps = {
   open: boolean;
   difficulty: string;
-  theme: string;
   onPlayAgain: () => void;
 };
 
 export default function CompletionModal({
   open,
   difficulty,
-  theme,
   onPlayAgain,
 }: CompletionModalProps) {
   if (!open) return null;
@@ -22,8 +20,6 @@ export default function CompletionModal({
           <p className="text-xl font-semibold">
             Difficulty: {difficulty.toUpperCase()}
           </p>
-
-          <p className="text-xl font-semibold">Theme: {theme}</p>
         </div>
 
         <button

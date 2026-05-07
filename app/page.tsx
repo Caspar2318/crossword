@@ -11,7 +11,7 @@ import {
   CompletionModal,
 } from "./components";
 import { Difficulty } from "./components/GameSetupPanel";
-import { fetchGameWords, themes } from "@/lib/wordApi";
+import { fetchGameWords } from "@/lib/wordApi";
 import { words as localWords } from "@/data/words";
 import { VocabWord } from "@/types/word";
 import {
@@ -34,7 +34,6 @@ export default function HomePage() {
   const [showAnswer, setShowAnswer] = useState(false);
   const [difficulty, setDifficulty] = useState<Difficulty>("easy");
   const [gameStarted, setGameStarted] = useState(false);
-  const [currentTheme, setCurrentTheme] = useState("");
   const [crossword, setCrossword] = useState<ReturnType<
     typeof generateSimpleCrossword
   > | null>(null);
@@ -56,7 +55,7 @@ export default function HomePage() {
   const [copySuccess, setCopySuccess] = useState(false);
 
   function getRandomWordCount() {
-    return Math.floor(Math.random() * 5) + 8;
+    return Math.floor(Math.random() * 11) + 8;
   }
 
   function handleAnswerChange(key: string, value: string) {
@@ -180,11 +179,8 @@ export default function HomePage() {
 
       if (!savedPuzzle) return;
 
-      const newCrossword = generateSimpleCrossword(savedPuzzle.words);
-
       setDifficulty(savedPuzzle.difficulty);
-      setCurrentTheme(savedPuzzle.theme);
-      setCrossword(newCrossword);
+      setCrossword(savedPuzzle.crossword);
       setRestoredRevealedCells(new Set(savedPuzzle.revealedCellKeys));
       setGameStarted(true);
       setShowAnswer(false);
@@ -206,13 +202,11 @@ export default function HomePage() {
       setGenerateError("");
 
       const randomWordCount = getRandomWordCount();
-      const randomTheme = themes[Math.floor(Math.random() * themes.length)];
-      setCurrentTheme(randomTheme);
 
       let gameWords;
 
       try {
-        gameWords = await fetchGameWords(randomWordCount, randomTheme);
+        gameWords = await fetchGameWords(randomWordCount);
       } catch {
         gameWords = getRandomWords(localWords, randomWordCount);
       }
@@ -284,12 +278,6 @@ export default function HomePage() {
         <header className="mb-4 shrink-0">
           <div className="flex flex-wrap items-baseline gap-2">
             <h1 className="text-3xl sm:text-4xl font-bold italic">Crossword</h1>
-
-            {gameStarted && currentTheme && (
-              <span className="text-2xl sm:text-3xl font-bold italic">
-                - {capitalize(currentTheme)} Edition
-              </span>
-            )}
           </div>
         </header>
 
@@ -333,13 +321,12 @@ export default function HomePage() {
               {showAnswer ? "Hide" : "Answer"}
             </button>
 
-            {crossword && currentTheme && (
+            {crossword && (
               <button
                 onClick={async () => {
                   await copyPuzzleLink({
                     difficulty,
-                    theme: currentTheme,
-                    words: placedWordsToVocabWords(crossword.placedWords),
+                    crossword,
                     revealedCellKeys: Array.from(revealedCells),
                   });
 
@@ -405,7 +392,6 @@ export default function HomePage() {
       <CompletionModal
         open={isCompleted}
         difficulty={difficulty}
-        theme={capitalize(currentTheme)}
         onPlayAgain={handleNewGame}
       />
 
@@ -492,14 +478,9 @@ function getRandomWords<T>(list: T[], count: number) {
   return [...list].sort(() => Math.random() - 0.5).slice(0, count);
 }
 
-function capitalize(text: string) {
-  return text.charAt(0).toUpperCase() + text.slice(1);
-}
-
 type SavedPuzzle = {
   difficulty: Difficulty;
-  theme: string;
-  words: VocabWord[];
+  crossword: ReturnType<typeof generateSimpleCrossword>;
   revealedCellKeys: string[];
 };
 
@@ -524,16 +505,4 @@ async function copyPuzzleLink(data: SavedPuzzle) {
   const url = `${window.location.origin}${window.location.pathname}?puzzle=${encoded}`;
 
   await navigator.clipboard.writeText(url);
-}
-
-function placedWordsToVocabWords(placedWords: PlacedWord[]): VocabWord[] {
-  return placedWords.map((item) => ({
-    word: item.word,
-    meaning: item.meaning,
-    clue: item.clue,
-    phonetic: item.phonetic,
-    audioUrl: item.audioUrl,
-    partOfSpeech: item.partOfSpeech,
-    level: "CET4",
-  }));
 }

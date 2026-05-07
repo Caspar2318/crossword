@@ -17,6 +17,7 @@ type DictionaryApiResponse = {
 
 type DatamuseWord = {
   word: string;
+  score?: number;
 };
 
 const CACHE_KEY = "crossword_word_cache_v1";
@@ -38,32 +39,60 @@ export const themes = [
   "city",
 ];
 
+const MIXED_SEEDS = [
+  "school",
+  "study",
+  "travel",
+  "nature",
+  "money",
+  "health",
+  "family",
+  "future",
+  "science",
+  "culture",
+  "music",
+  "history",
+  "food",
+  "city",
+  "work",
+  "home",
+  "water",
+  "light",
+  "time",
+  "life",
+];
+
 export async function fetchGameWords(
   count: number,
   theme?: string,
 ): Promise<VocabWord[]> {
-  const seed = theme ?? themes[Math.floor(Math.random() * themes.length)];
+  const seeds = theme ? [theme] : shuffleItems(MIXED_SEEDS).slice(0, 6);
 
-  const datamuseRes = await fetch(
-    `https://api.datamuse.com/words?ml=${seed}&sp=??????*&max=${count * 5}`,
-  );
+  const candidateSet = new Set<string>();
 
-  if (!datamuseRes.ok) {
-    throw new Error("Failed to fetch word list.");
+  for (const seed of seeds) {
+    const datamuseRes = await fetch(
+      `https://api.datamuse.com/words?ml=${seed}&sp=???*&max=${count * 8}`,
+    );
+
+    if (!datamuseRes.ok) continue;
+
+    const datamuseWords = (await datamuseRes.json()) as DatamuseWord[];
+
+    datamuseWords
+      .map((item) => item.word.toLowerCase())
+      .filter((word) => /^[a-z]+$/.test(word))
+      .filter((word) => word.length >= 3 && word.length <= 8)
+      .forEach((word) => candidateSet.add(word));
   }
 
-  const datamuseWords = (await datamuseRes.json()) as DatamuseWord[];
-
-  const candidates = datamuseWords
-    .map((item) => item.word.toLowerCase())
-    .filter((word) => /^[a-z]+$/.test(word))
-    .filter((word) => word.length >= 5 && word.length <= 9);
-
-  const uniqueCandidates = [...new Set(candidates)];
+  const candidates = [...candidateSet]
+    .sort((a, b) => scoreWordForCrossword(b) - scoreWordForCrossword(a))
+    .slice(0, count * 5);
 
   const results: VocabWord[] = [];
 
-  for (const word of uniqueCandidates) {
+  for (const word of candidates) {
     if (results.length >= count) break;
 
     const detail = await getWordDetailWithCache(word);
@@ -73,7 +102,44 @@ export async function fetchGameWords(
     }
   }
 
-  return results;
+  return shuffleItems(results);
+}
+
+function scoreWordForCrossword(word: string): number {
+  const commonLetters = ["e", "a", "r", "i", "o", "t", "n", "s", "l"];
+
+  let score = 0;
+
+  for (const letter of word) {
+    if (commonLetters.includes(letter)) {
+      score += 3;
+    }
+  }
+
+  if (word.length >= 4 && word.length <= 6) {
+    score += 10;
+  }
+
+  if (word.length === 3) {
+    score += 4;
+  }
+
+  if (word.length >= 8) {
+    score -= 4;
+  }
+
+  return score;
+}
+
+function shuffleItems<T>(items: T[]): T[] {
+  const result = [...items];
+
+  for (let i = result.length - 1; i > 0; i--) {
+    const randomIndex = Math.floor(Math.random() * (i + 1));
+    [result[i], result[randomIndex]] = [result[randomIndex], result[i]];
+  }
+
+  return result;
 }
 
 async function getWordDetailWithCache(word: string): Promise<VocabWord | null> {
