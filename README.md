@@ -1,36 +1,199 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Crossword Game
 
-## Getting Started
+A responsive English vocabulary crossword game built with Next.js and TypeScript.
 
-First, run the development server:
+The project is designed as an interactive classroom game where students can learn English vocabulary through crossword puzzles instead of traditional memorization.
+
+---
+
+# Features
+
+## Dynamic Crossword Generation
+
+- Automatically generates crossword puzzles from dynamic English vocabulary data
+- Randomized themes for each game
+- Supports different difficulty levels:
+  - Easy → 60% letters revealed
+  - Hard → 40% letters revealed
+  - Crazy → 20% letters revealed
+
+- Crossword layout is generated programmatically
+
+---
+
+## Responsive UI
+
+- Fully responsive design
+- Desktop layout:
+  - Crossword on the left
+  - Clues on the right
+
+- Mobile layout:
+  - Crossword on top
+  - Clues below
+
+- Optimized virtual keyboard for touch devices
+
+---
+
+## Interactive Gameplay
+
+- Fill crossword cells directly
+- Virtual keyboard support
+- Check / Uncheck answers
+- Show / Hide answers
+- Dynamic clue panel
+- Word pronunciation playback
+- Completion modal with confetti animation
+
+---
+
+## Shareable Puzzle Links
+
+- Copy Link feature
+- Shared links restore:
+  - Same crossword layout
+  - Same revealed letters
+  - Same difficulty
+  - Same theme
+
+- Puzzle data is compressed into URL parameters
+
+---
+
+# Tech Stack
+
+## Frontend
+
+- Next.js 16
+- React
+- TypeScript
+- Tailwind CSS
+
+## Libraries
+
+- canvas-confetti
+- react-icons
+- lz-string
+
+## APIs
+
+### Datamuse API
+
+Used for generating related English words based on themes.
+
+### Free Dictionary API
+
+Used for:
+
+- Definitions
+- Phonetics
+- Pronunciation audio
+- Part of speech
+
+---
+
+# Main Functionalities
+
+## Crossword Generator
+
+The crossword system:
+
+- Dynamically places words into a grid
+- Crops unused grid areas
+- Generates playable crossword layouts
+- Supports clue indexing and directions
+
+---
+
+## Reveal System
+
+Different difficulty levels reveal different percentages of letters.
+
+The revealed cells are preserved when sharing puzzle links.
+
+---
+
+## Virtual Keyboard
+
+Custom virtual keyboard system:
+
+- Mobile friendly
+- Auto positioning near selected cells
+- Auto close when clicking outside
+- Supports touch devices
+
+---
+
+## Puzzle Sharing
+
+Puzzle state is serialized and compressed into URL parameters.
+
+Shared puzzles preserve:
+
+- Crossword structure
+- Revealed letters
+- Difficulty
+- Theme
+
+---
+
+# Performance Optimizations
+
+- LocalStorage word cache
+- API fallback system
+- Dynamic rendering optimization
+- Responsive grid scaling
+
+---
+
+# Future Improvements
+
+Potential future features:
+
+- Better crossword generation algorithm
+- Multiplayer classroom mode
+- Supabase backend for short share links
+- PWA support
+- Classroom leaderboard system
+- Timed challenge mode
+
+---
+
+# Local Development
+
+Install dependencies:
+
+```bash
+npm install
+```
+
+Run development server:
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Build production version:
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+```bash
+npm run build
+```
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+---
 
-## Learn More
+# Deployment
 
-To learn more about Next.js, take a look at the following resources:
+The project can be deployed directly to:
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+- Vercel
+- Netlify
+- Cloudflare Pages
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+No backend server is required for the current version.
 
-## Deploy on Vercel
+---
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+# License
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+MIT
