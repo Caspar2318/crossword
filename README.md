@@ -1,10 +1,12 @@
 # Crossword Game
 
-A responsive English vocabulary crossword game built with Next.js and TypeScript.
+An interactive English vocabulary crossword game built with Next.js and TypeScript.
 
-The project is designed as an interactive classroom game where students can learn English vocabulary through crossword puzzles instead of traditional memorization.
+The project is designed as a fun classroom-style learning experience where students can improve vocabulary through crossword puzzles instead of traditional memorization.
 
-Link at: https://crossword-green.vercel.app/
+### Live Demo
+
+[Crossword Game Live Demo](https://crossword-green.vercel.app/)
 
 ---
 
@@ -12,39 +14,44 @@ Link at: https://crossword-green.vercel.app/
 
 ## Dynamic Crossword Generation
 
-- Automatically generates crossword puzzles from dynamic English vocabulary data
-- Randomized themes for each game
-- Supports different difficulty levels:
-  - Easy → 60% letters revealed
-  - Hard → 40% letters revealed
-  - Crazy → 20% letters revealed
+- Programmatically generates crossword puzzles from dynamic English vocabulary data
+- Randomized vocabulary selection for every game
+- Automatically creates compact crossword layouts
+- Supports both horizontal and vertical word placement
+- Multiple generation attempts are used to improve crossword quality and density
+- Unused grid areas are automatically trimmed for a cleaner layout
 
-- Crossword layout is generated programmatically
+### Difficulty Modes
+
+- **Easy** → 60% letters revealed
+- **Hard** → 40% letters revealed
+- **Crazy** → 20% letters revealed
 
 ---
 
 ## Responsive UI
 
-- Fully responsive design
+- Fully responsive design for desktop and mobile
+
 - Desktop layout:
-  - Crossword on the left
-  - Clues on the right
+  - Crossword grid on the left
+  - Clue panel on the right
 
 - Mobile layout:
-  - Crossword on top
+  - Crossword grid on top
   - Clues below
 
-- Optimized virtual keyboard for touch devices
+- Optimized touch-friendly virtual keyboard
 
 ---
 
 ## Interactive Gameplay
 
 - Fill crossword cells directly
-- Virtual keyboard support
+- Mobile virtual keyboard support
 - Check / Uncheck answers
 - Show / Hide answers
-- Dynamic clue panel
+- Interactive clue panel
 - Word pronunciation playback
 - Completion modal with confetti animation
 
@@ -53,13 +60,14 @@ Link at: https://crossword-green.vercel.app/
 ## Shareable Puzzle Links
 
 - Copy Link feature
-- Shared links restore:
-  - Same crossword layout
-  - Same revealed letters
-  - Same difficulty
-  - Same theme
 
-- Puzzle data is compressed into URL parameters
+- Shared links preserve:
+  - Exact crossword layout
+  - Revealed letters
+  - Difficulty level
+  - Puzzle structure
+
+- Puzzle state is serialized and compressed into URL parameters using `lz-string`
 
 ---
 
@@ -78,13 +86,15 @@ Link at: https://crossword-green.vercel.app/
 - react-icons
 - lz-string
 
-## APIs
+---
 
-### Datamuse API
+# APIs
 
-Used for generating related English words based on themes.
+## Datamuse API
 
-### Free Dictionary API
+Used for generating related English vocabulary dynamically.
+
+## Free Dictionary API
 
 Used for:
 
@@ -99,20 +109,21 @@ Used for:
 
 ## Crossword Generator
 
-The crossword system:
+The crossword generation system:
 
-- Dynamically places words into a grid
-- Crops unused grid areas
-- Generates playable crossword layouts
-- Supports clue indexing and directions
+- Dynamically places words into a crossword grid
+- Supports across and down placements
+- Scores candidate placements to create denser layouts
+- Automatically trims unused outer rows and columns
+- Runs multiple generation attempts to improve puzzle quality
 
 ---
 
 ## Reveal System
 
-Different difficulty levels reveal different percentages of letters.
+Different difficulty modes reveal different percentages of letters.
 
-The revealed cells are preserved when sharing puzzle links.
+Revealed cells are preserved when sharing puzzle links.
 
 ---
 
@@ -123,7 +134,7 @@ Custom virtual keyboard system:
 - Mobile friendly
 - Auto positioning near selected cells
 - Auto close when clicking outside
-- Supports touch devices
+- Touch optimized
 
 ---
 
@@ -136,7 +147,7 @@ Shared puzzles preserve:
 - Crossword structure
 - Revealed letters
 - Difficulty
-- Theme
+- Exact layout positioning
 
 ---
 
@@ -144,8 +155,10 @@ Shared puzzles preserve:
 
 - LocalStorage word cache
 - API fallback system
-- Dynamic rendering optimization
+- Crossword layout trimming
+- Multiple-attempt crossword generation
 - Responsive grid scaling
+- Dynamic rendering optimization
 
 ---
 
@@ -153,12 +166,13 @@ Shared puzzles preserve:
 
 Potential future features:
 
-- Better crossword generation algorithm
+- Smarter crossword generation algorithm
 - Multiplayer classroom mode
 - Supabase backend for short share links
 - PWA support
 - Classroom leaderboard system
 - Timed challenge mode
+- Daily challenge puzzles
 
 ---
 
