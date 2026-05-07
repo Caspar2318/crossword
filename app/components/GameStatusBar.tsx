@@ -42,7 +42,7 @@ function StatusItem({
   value: string | number;
 }) {
   return (
-    <div className="rounded-xl border-2 border-black bg-white px-3 py-2 shadow-[3px_3px_0_#000] text-black">
+    <div>
       <span className="mr-2 text-sm font-semibold">{label}</span>
       <span className="font-bold">{value}</span>
     </div>

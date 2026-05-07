@@ -18,6 +18,7 @@ import {
   compressToEncodedURIComponent,
   decompressFromEncodedURIComponent,
 } from "lz-string";
+import { IoIosArrowBack } from "react-icons/io";
 
 export default function HomePage() {
   const [selectedWord, setSelectedWord] = useState<PlacedWord | null>(null);
@@ -305,9 +306,9 @@ export default function HomePage() {
           <div className="mb-4 shrink-0 flex flex-wrap items-center gap-3">
             <button
               onClick={handleResetGame}
-              className={cartoonButtonClass("white")}
+              className={`${cartoonButtonClass("white")} flex items-center gap-0.5`}
             >
-              Back
+              <IoIosArrowBack size={18} /> Back
             </button>
 
             <button
@@ -484,7 +485,7 @@ function cartoonButtonClass(
     orange: "bg-orange-300 hover:bg-orange-200",
   }[color];
 
-  return `px-3 py-1 rounded-lg text-black font-bold transition border-2 border-black cursor-pointer shadow-[3px_3px_0_#000] active:translate-x-[2px] active:translate-y-[2px] active:shadow-none disabled:opacity-50 disabled:cursor-not-allowed ${colorClass}`;
+  return `px-2 py-1 rounded-lg text-black font-bold transition border-2 border-black cursor-pointer shadow-[3px_3px_0_#000] active:translate-x-[2px] active:translate-y-[2px] active:shadow-none disabled:opacity-50 disabled:cursor-not-allowed ${colorClass}`;
 }
 
 function getRandomWords<T>(list: T[], count: number) {
