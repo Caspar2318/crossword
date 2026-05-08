@@ -64,15 +64,8 @@ export default function WordListModal({
 
                 <p className="mt-2 text-lg text-slate-800">
                   <span className="font-bold">Definition: </span>
-                  {item.definition || "Not available yet"}
+                  {item.definition || "No available def found."}
                 </p>
-
-                {item.clue && (
-                  <p className="mt-1 text-md text-slate-800">
-                    <span className="font-bold">Clue: </span>
-                    {item.clue}
-                  </p>
-                )}
 
                 {item.example && (
                   <p className="mt-1 text-md text-slate-800">
