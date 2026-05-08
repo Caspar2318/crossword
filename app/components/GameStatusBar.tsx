@@ -1,8 +1,6 @@
 import { CrosswordCell, PlacedWord } from "@/lib/crossword";
-import { Difficulty } from "./GameSetupPanel";
 
 type GameStatusBarProps = {
-  difficulty: Difficulty;
   grid: CrosswordCell[][];
   placedWords: PlacedWord[];
   answers: Record<string, string>;
@@ -10,7 +8,6 @@ type GameStatusBarProps = {
 };
 
 export default function GameStatusBar({
-  difficulty,
   grid,
   placedWords,
   answers,
@@ -24,7 +21,6 @@ export default function GameStatusBar({
 
   return (
     <div className="mb-4 flex flex-wrap items-center gap-3">
-      <StatusItem label="Difficulty" value={difficulty.toUpperCase()} />
       <StatusItem label="Words" value={placedWords.length} />
       <StatusItem
         label="Filled"

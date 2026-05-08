@@ -1,7 +1,7 @@
 "use client";
 import { useEffect, useMemo, useState } from "react";
 import { generateSimpleCrossword, PlacedWord } from "@/lib/crossword";
-import confetti from "canvas-confetti";
+
 import {
   CluePanel,
   CrosswordGrid,
@@ -9,15 +9,19 @@ import {
   GameSetupPanel,
   GameStatusBar,
   CompletionModal,
+  WordListModal,
 } from "./components";
-import { Difficulty } from "./components/GameSetupPanel";
-import { fetchGameWords } from "@/lib/wordApi";
-import { words as localWords } from "@/data/words";
-import { VocabWord } from "@/types/word";
 import {
-  compressToEncodedURIComponent,
-  decompressFromEncodedURIComponent,
-} from "lz-string";
+  cartoonButtonClass,
+  copyPuzzleLink,
+  createRevealedCells,
+  decodePuzzle,
+  launchWinConfetti,
+  parseWordInput,
+  speakWord,
+  generatePuzzleFromWordBank,
+} from "@/lib/functions";
+import { VocabWord } from "@/types/word";
 import { IoIosArrowBack } from "react-icons/io";
 
 export default function HomePage() {
@@ -32,7 +36,9 @@ export default function HomePage() {
   } | null>(null);
 
   const [showAnswer, setShowAnswer] = useState(false);
-  const [difficulty, setDifficulty] = useState<Difficulty>("easy");
+  const [wordInput, setWordInput] = useState("");
+  const [words, setWords] = useState<VocabWord[]>([]);
+  const [isImporting, setIsImporting] = useState(false);
   const [gameStarted, setGameStarted] = useState(false);
   const [crossword, setCrossword] = useState<ReturnType<
     typeof generateSimpleCrossword
@@ -47,16 +53,14 @@ export default function HomePage() {
       return restoredRevealedCells;
     }
 
-    return createRevealedCells(crossword.grid, difficulty);
-  }, [crossword, difficulty, restoredRevealedCells]);
+    return createRevealedCells(crossword.grid);
+  }, [crossword, restoredRevealedCells]);
 
   const [isGenerating, setIsGenerating] = useState(false);
   const [generateError, setGenerateError] = useState("");
   const [copySuccess, setCopySuccess] = useState(false);
-
-  function getRandomWordCount() {
-    return Math.floor(Math.random() * 5) + 8;
-  }
+  const [showWordList, setShowWordList] = useState(false);
+  const [isLoadingWords, setIsLoadingWords] = useState(true);
 
   function handleAnswerChange(key: string, value: string) {
     setSubmitted(false);
@@ -82,6 +86,10 @@ export default function HomePage() {
 
   function handleToggleCheck() {
     if (!crossword) return;
+
+    setShowAnswer(false);
+    setSelectedCellKey(null);
+    setKeyboardPosition(null);
 
     if (submitted) {
       setSubmitted(false);
@@ -111,27 +119,7 @@ export default function HomePage() {
     setIsCompleted(allCorrect);
 
     if (allCorrect) {
-      confetti({
-        particleCount: 160,
-        spread: 90,
-        origin: { y: 0.65 },
-      });
-
-      setTimeout(() => {
-        confetti({
-          particleCount: 120,
-          angle: 60,
-          spread: 70,
-          origin: { x: 0 },
-        });
-
-        confetti({
-          particleCount: 120,
-          angle: 120,
-          spread: 70,
-          origin: { x: 1 },
-        });
-      }, 200);
+      launchWinConfetti();
     }
 
     if (!allCorrect) {
@@ -179,7 +167,6 @@ export default function HomePage() {
 
       if (!savedPuzzle) return;
 
-      setDifficulty(savedPuzzle.difficulty);
       setCrossword(savedPuzzle.crossword);
       setRestoredRevealedCells(new Set(savedPuzzle.revealedCellKeys));
       setGameStarted(true);
@@ -195,31 +182,44 @@ export default function HomePage() {
     return () => window.clearTimeout(timer);
   }, []);
 
-  async function handleGenerateGame(nextDifficulty: Difficulty) {
+  useEffect(() => {
+    async function loadWords() {
+      try {
+        setIsLoadingWords(true);
+
+        const res = await fetch("/api/words");
+        const data = await res.json();
+
+        if (!res.ok || !data.success) return;
+
+        setWords(data.words);
+      } catch {
+        // ignore for now
+      } finally {
+        setIsLoadingWords(false);
+      }
+    }
+
+    loadWords();
+  }, []);
+
+  async function handleGenerateGame() {
     try {
-      setDifficulty(nextDifficulty);
       setIsGenerating(true);
       setGenerateError("");
 
-      const randomWordCount = getRandomWordCount();
+      await new Promise((resolve) => setTimeout(resolve, 50));
 
-      let gameWords;
+      const currentWords =
+        words.length > 0 ? words : await loadWordsFromDatabase();
 
-      try {
-        gameWords = await fetchGameWords(randomWordCount);
-      } catch {
-        gameWords = getRandomWords(localWords, randomWordCount);
+      if (currentWords.length < 20) {
+        throw new Error(
+          "Please import at least 20 words before generating a puzzle.",
+        );
       }
 
-      if (gameWords.length < 3) {
-        gameWords = getRandomWords(localWords, randomWordCount);
-      }
-
-      if (gameWords.length < 3) {
-        throw new Error("Not enough words to generate crossword.");
-      }
-
-      const newCrossword = generateSimpleCrossword(gameWords);
+      const newCrossword = generatePuzzleFromWordBank(currentWords);
 
       setCrossword(newCrossword);
       setGameStarted(true);
@@ -239,6 +239,45 @@ export default function HomePage() {
       );
     } finally {
       setIsGenerating(false);
+    }
+  }
+
+  async function handleImportWords() {
+    try {
+      setIsImporting(true);
+      setGenerateError("");
+
+      const uniqueWords = parseWordInput(wordInput);
+
+      if (uniqueWords.length < 30 || uniqueWords.length > 40) {
+        throw new Error("Please enter 30–40 words.");
+      }
+
+      const res = await fetch("/api/words/import", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          words: uniqueWords,
+        }),
+      });
+
+      const data = await res.json();
+
+      if (!res.ok || !data.success) {
+        throw new Error(data.error || "Failed to import words.");
+      }
+
+      setWords(data.words);
+      setWordInput("");
+      setShowWordList(true);
+    } catch (error) {
+      setGenerateError(
+        error instanceof Error ? error.message : "Failed to import words.",
+      );
+    } finally {
+      setIsImporting(false);
     }
   }
 
@@ -263,7 +302,24 @@ export default function HomePage() {
   }
 
   function handleNewGame() {
-    handleGenerateGame(difficulty);
+    handleGenerateGame();
+  }
+
+  function handleViewWords() {
+    setShowWordList(true);
+  }
+
+  async function loadWordsFromDatabase() {
+    const res = await fetch("/api/words");
+    const data = await res.json();
+
+    if (!res.ok || !data.success) {
+      throw new Error(data.error || "Failed to load words.");
+    }
+
+    setWords(data.words);
+
+    return data.words as VocabWord[];
   }
 
   return (
@@ -283,10 +339,16 @@ export default function HomePage() {
 
         {!gameStarted && (
           <GameSetupPanel
-            difficulty={difficulty}
             isGenerating={isGenerating}
+            isImporting={isImporting}
             error={generateError}
+            wordInput={wordInput}
+            words={words}
+            onWordInputChange={setWordInput}
+            onImportWords={handleImportWords}
             onGenerate={handleGenerateGame}
+            onViewWords={handleViewWords}
+            isLoadingWords={isLoadingWords}
           />
         )}
 
@@ -316,16 +378,16 @@ export default function HomePage() {
 
             <button
               onClick={handleToggleAnswer}
-              className={cartoonButtonClass(showAnswer ? "orange" : "yellow")}
+              className={`${cartoonButtonClass(showAnswer ? "orange" : "yellow")} w-[100px]`}
+              disabled={submitted}
             >
-              {showAnswer ? "Hide" : "Answer"}
+              {showAnswer ? "Reveal Off" : "Reveal All"}
             </button>
 
             {crossword && (
               <button
                 onClick={async () => {
                   await copyPuzzleLink({
-                    difficulty,
                     crossword,
                     revealedCellKeys: Array.from(revealedCells),
                   });
@@ -346,7 +408,6 @@ export default function HomePage() {
 
         {gameStarted && crossword && (
           <GameStatusBar
-            difficulty={difficulty}
             grid={crossword.grid}
             placedWords={crossword.placedWords}
             answers={answers}
@@ -389,10 +450,12 @@ export default function HomePage() {
         onBackspace={handleVirtualBackspace}
       />
 
-      <CompletionModal
-        open={isCompleted}
-        difficulty={difficulty}
-        onPlayAgain={handleNewGame}
+      <CompletionModal open={isCompleted} onPlayAgain={handleNewGame} />
+      <WordListModal
+        open={showWordList}
+        words={words}
+        onClose={() => setShowWordList(false)}
+        onPlayWord={speakWord}
       />
 
       {copySuccess && (
@@ -417,92 +480,4 @@ export default function HomePage() {
       )}
     </main>
   );
-}
-
-function createRevealedCells(
-  grid: ReturnType<typeof generateSimpleCrossword>["grid"],
-  difficulty: Difficulty,
-) {
-  const revealed = new Set<string>();
-
-  const revealRateMap: Record<Difficulty, number> = {
-    easy: 0.6,
-    hard: 0.4,
-    crazy: 0.2,
-  };
-
-  const revealRate = revealRateMap[difficulty];
-
-  for (const row of grid) {
-    for (const cell of row) {
-      if (cell.isEmpty) continue;
-
-      const key = `${cell.row}-${cell.col}`;
-
-      if (Math.random() < revealRate) {
-        revealed.add(key);
-      }
-    }
-  }
-
-  return revealed;
-}
-
-function speakWord(word: string, audioUrl?: string) {
-  if (audioUrl) {
-    const audio = new Audio(audioUrl);
-    audio.play();
-    return;
-  }
-
-  const utterance = new SpeechSynthesisUtterance(word);
-  utterance.lang = "en-US";
-  window.speechSynthesis.speak(utterance);
-}
-
-function cartoonButtonClass(
-  color: "white" | "blue" | "green" | "yellow" | "orange",
-) {
-  const colorClass = {
-    white: "bg-white hover:bg-slate-100",
-    blue: "bg-blue-300 hover:bg-blue-200",
-    green: "bg-green-400 hover:bg-green-300",
-    yellow: "bg-yellow-300 hover:bg-yellow-200",
-    orange: "bg-orange-300 hover:bg-orange-200",
-  }[color];
-
-  return `px-2 py-1 rounded-lg text-black font-bold transition border-2 border-black cursor-pointer shadow-[3px_3px_0_#000] active:translate-x-[2px] active:translate-y-[2px] active:shadow-none disabled:opacity-50 disabled:cursor-not-allowed ${colorClass}`;
-}
-
-function getRandomWords<T>(list: T[], count: number) {
-  return [...list].sort(() => Math.random() - 0.5).slice(0, count);
-}
-
-type SavedPuzzle = {
-  difficulty: Difficulty;
-  crossword: ReturnType<typeof generateSimpleCrossword>;
-  revealedCellKeys: string[];
-};
-
-function encodePuzzle(data: SavedPuzzle) {
-  return compressToEncodedURIComponent(JSON.stringify(data));
-}
-
-function decodePuzzle(value: string): SavedPuzzle | null {
-  try {
-    const json = decompressFromEncodedURIComponent(value);
-
-    if (!json) return null;
-
-    return JSON.parse(json) as SavedPuzzle;
-  } catch {
-    return null;
-  }
-}
-
-async function copyPuzzleLink(data: SavedPuzzle) {
-  const encoded = encodePuzzle(data);
-  const url = `${window.location.origin}${window.location.pathname}?puzzle=${encoded}`;
-
-  await navigator.clipboard.writeText(url);
 }

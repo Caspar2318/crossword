@@ -1,9 +1,10 @@
 export type VocabWord = {
+  id?: string;
   word: string;
-  meaning: string;
-  clue: string;
+  definition?: string;
+  clue?: string;
+  example?: string;
   phonetic?: string;
   audioUrl?: string;
   partOfSpeech?: string;
-  level: "CET4" | "CET6";
 };

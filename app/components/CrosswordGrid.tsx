@@ -50,6 +50,7 @@ export default function CrosswordGrid({
   }
 
   const totalCols = maxCol - minCol + 1;
+  const cellSizeClass = "w-12 h-12";
 
   function getCellStatus(cell: CrosswordCell): AnswerStatus {
     if (!submitted) return "idle";
@@ -74,83 +75,80 @@ export default function CrosswordGrid({
   }
 
   return (
-    <div
-      className="inline-grid gap-1 sm:gap-2 mt-4 sm:mt-6 p-4 sm:px-10 lg:px-[80px]"
-      style={{
-        gridTemplateColumns: `repeat(${totalCols}, clamp(36px, 8vw, 56px))`,
-      }}
-    >
-      {croppedGrid.flat().map((cell) => {
-        const key = getCellKey(cell);
+    <div className="w-full overflow-x-auto py-2">
+      <div
+        className="inline-grid gap-1.5 mt-4 sm:mt-6 p-4 pl-6"
+        style={{
+          gridTemplateColumns: `repeat(${totalCols}, 3rem)`,
+        }}
+      >
+        {croppedGrid.flat().map((cell) => {
+          const key = getCellKey(cell);
 
-        if (cell.isEmpty) {
+          if (cell.isEmpty) {
+            return <div key={key} className={cellSizeClass} />;
+          }
+
+          const isRevealed = revealedCells.has(key);
+          const status = getCellStatus(cell);
+          const cellNumber = getCellNumber(cell);
+
+          const statusClass =
+            status === "correct"
+              ? "bg-white border-black text-green-600"
+              : status === "wrong"
+                ? "bg-white border-black text-red-600"
+                : isRevealed
+                  ? "bg-white border-black text-black"
+                  : "bg-white border-black text-purple-600";
+
           return (
             <div
               key={key}
-              className="w-[clamp(36px,8vw,56px)] h-[clamp(36px,8vw,56px)]"
-            />
-          );
-        }
-
-        const isRevealed = revealedCells.has(key);
-        const status = getCellStatus(cell);
-        const cellNumber = getCellNumber(cell);
-
-        const statusClass =
-          status === "correct"
-            ? "bg-white border-black text-green-600"
-            : status === "wrong"
-              ? "bg-white border-black text-red-600"
-              : isRevealed
-                ? "bg-white border-black text-black"
-                : "bg-white border-black text-purple-600";
-
-        return (
-          <div
-            key={key}
-            onClick={(event) => {
-              if (!isRevealed && !isCompleted) {
-                const rect = event.currentTarget.getBoundingClientRect();
-
-                onSelectCell(key, getKeyboardPosition(rect));
-              }
-            }}
-            className={`relative w-[clamp(36px,8vw,56px)] h-[clamp(36px,8vw,56px)] flex items-center justify-center rounded-md border-2 text-lg sm:text-2xl font-semibold shadow-sm overflow-visible ${
-              selectedCellKey === key ? "ring-2 sm:ring-4 ring-blue-400" : ""
-            } ${statusClass}`}
-          >
-            {cellNumber && (
-              <span className="absolute -top-2 -left-2 z-10 flex h-5 min-w-5 sm:h-6 sm:min-w-6 items-center justify-center rounded-full border-2 border-black bg-blue-100 text-sm sm:text-lg font-bold text-black">
-                {cellNumber}
-              </span>
-            )}
-
-            {isRevealed || isCompleted ? (
-              <span>{cell.letter}</span>
-            ) : (
-              <input
-                data-crossword-input="true"
-                value={answers[key] ?? ""}
-                onFocus={(event) => {
+              onClick={(event) => {
+                if (!isRevealed && !isCompleted) {
                   const rect = event.currentTarget.getBoundingClientRect();
 
                   onSelectCell(key, getKeyboardPosition(rect));
-                }}
-                onChange={(event) => {
-                  const value = event.target.value
-                    .replace(/[^a-zA-Z]/g, "")
-                    .slice(-1)
-                    .toUpperCase();
+                }
+              }}
+              className={`relative ${cellSizeClass} flex items-center justify-center rounded-md border-2 text-lg sm:text-2xl font-semibold shadow-sm overflow-visible ${
+                selectedCellKey === key ? "ring-2 sm:ring-4 ring-blue-400" : ""
+              } ${statusClass}`}
+            >
+              {cellNumber && (
+                <span className="absolute -top-2 -left-2 z-10 flex h-5 min-w-5 sm:h-6 sm:min-w-6 items-center justify-center rounded-full border-2 border-black bg-blue-100 text-sm sm:text-lg font-bold text-black">
+                  {cellNumber}
+                </span>
+              )}
 
-                  onAnswerChange(key, value);
-                }}
-                className="w-full h-full bg-transparent text-center outline-none uppercase cursor-pointer hover:bg-blue-50 transition"
-                maxLength={1}
-              />
-            )}
-          </div>
-        );
-      })}
+              {isRevealed || isCompleted ? (
+                <span>{cell.letter}</span>
+              ) : (
+                <input
+                  data-crossword-input="true"
+                  value={answers[key] ?? ""}
+                  onFocus={(event) => {
+                    const rect = event.currentTarget.getBoundingClientRect();
+
+                    onSelectCell(key, getKeyboardPosition(rect));
+                  }}
+                  onChange={(event) => {
+                    const value = event.target.value
+                      .replace(/[^a-zA-Z]/g, "")
+                      .slice(-1)
+                      .toUpperCase();
+
+                    onAnswerChange(key, value);
+                  }}
+                  className="w-full h-full bg-transparent text-center outline-none uppercase cursor-pointer hover:bg-blue-50 transition"
+                  maxLength={1}
+                />
+              )}
+            </div>
+          );
+        })}
+      </div>
     </div>
   );
 }

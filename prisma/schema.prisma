@@ -1,0 +1,21 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model Word {
+  id           String   @id @default(cuid())
+  word         String   @unique
+  clue         String?
+  definition   String?
+  example      String?
+  phonetic     String?
+  audioUrl     String?
+  partOfSpeech String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}

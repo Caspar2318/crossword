@@ -4,6 +4,7 @@ import VirtualKeyboard from "./VirtualKeyboard";
 import GameSetupPanel from "./GameSetupPanel";
 import GameStatusBar from "./GameStatusBar";
 import CompletionModal from "./CompletionModal";
+import WordListModal from "./WordListModal";
 
 export {
   CluePanel,
@@ -12,4 +13,5 @@ export {
   GameSetupPanel,
   GameStatusBar,
   CompletionModal,
+  WordListModal,
 };

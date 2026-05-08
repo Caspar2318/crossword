@@ -27,7 +27,7 @@ export default function CluePanel({
   const [hintWordKey, setHintWordKey] = useState<string | null>(null);
 
   return (
-    <aside className="w-full lg:w-[470px] lg:h-full min-h-0">
+    <aside className="w-full lg:w-[400px] lg:h-full min-h-0">
       <div className="h-full rounded-2xl p-0 sm:p-5 flex flex-col">
         <div className="shrink-0 mb-3 sm:mb-4">
           <h2 className="text-xl sm:text-2xl font-semibold">Clues</h2>
@@ -69,8 +69,8 @@ export default function CluePanel({
                       )}
                     </span>
 
-                    <span className="font-semibold text-base sm:text-lg leading-6">
-                      {isCompleted ? item.word : item.clue}
+                    <span className="font-semibold text-base sm:text-md leading-6">
+                      {isCompleted ? item.word : item.definition}
                     </span>
                   </div>
                 </button>
@@ -99,11 +99,14 @@ export default function CluePanel({
               </div>
 
               {hintWordKey === item.word && (
-                <div className="mb-2 px-3 sm:px-10 text-sm sm:text-base text-red-500 font-semibold flex gap-2 sm:flex-row sm:gap-4">
-                  <p className="capitalize">
-                    {item.partOfSpeech ?? "unknown"};
-                  </p>
-                  <p>First letter: {item.word[0].toUpperCase()}</p>
+                <div className="mb-1 px-3 sm:px-10 text-sm sm:text-base font-semibold space-y-2">
+                  <div className="flex gap-4 text-red-500">
+                    {item.partOfSpeech && (
+                      <p className="capitalize">{item.partOfSpeech};</p>
+                    )}
+
+                    <p>First letter: {item.word[0].toUpperCase()}</p>
+                  </div>
                 </div>
               )}
             </div>
@@ -128,7 +131,7 @@ export default function CluePanel({
               <p className="text-slate-500 mb-2">{selectedWord.phonetic}</p>
             )}
 
-            <p className="text-base mb-4">{selectedWord.meaning}</p>
+            <p className="text-base mb-4">{selectedWord.definition}</p>
 
             <button
               onClick={() => onPlayWord(selectedWord.word)}

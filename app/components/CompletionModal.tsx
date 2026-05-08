@@ -1,12 +1,10 @@
 type CompletionModalProps = {
   open: boolean;
-  difficulty: string;
   onPlayAgain: () => void;
 };
 
 export default function CompletionModal({
   open,
-  difficulty,
   onPlayAgain,
 }: CompletionModalProps) {
   if (!open) return null;
@@ -15,12 +13,6 @@ export default function CompletionModal({
     <div className="fixed inset-0 z-[300] flex items-center justify-center bg-black/30 backdrop-blur-sm">
       <div className="w-[90%] max-w-md rounded-3xl border-4 border-black bg-white p-8 shadow-[8px_8px_0_#000]">
         <h2 className="text-4xl font-black mb-4 text-center">🎉 Completed!</h2>
-
-        <div className="space-y-2 text-center mb-6">
-          <p className="text-xl font-semibold">
-            Difficulty: {difficulty.toUpperCase()}
-          </p>
-        </div>
 
         <button
           onClick={onPlayAgain}
