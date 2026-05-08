@@ -322,6 +322,27 @@ export default function HomePage() {
     return data.words as VocabWord[];
   }
 
+  async function handleUpdateDefinition(id: string, definition: string) {
+    const res = await fetch("/api/words/update-definition", {
+      method: "PATCH",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        id,
+        definition,
+      }),
+    });
+
+    const data = await res.json();
+
+    if (!res.ok || !data.success) {
+      throw new Error(data.error || "Failed to update definition.");
+    }
+
+    setWords((prev) => prev.map((item) => (item.id === id ? data.word : item)));
+  }
+
   return (
     <main
       className="min-h-screen lg:h-screen lg:overflow-hidden overflow-y-auto text-slate-800 p-4 sm:p-6 lg:p-8"
@@ -451,11 +472,13 @@ export default function HomePage() {
       />
 
       <CompletionModal open={isCompleted} onPlayAgain={handleNewGame} />
+
       <WordListModal
         open={showWordList}
         words={words}
         onClose={() => setShowWordList(false)}
         onPlayWord={speakWord}
+        onUpdateDefinition={handleUpdateDefinition}
       />
 
       {copySuccess && (

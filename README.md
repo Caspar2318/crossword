@@ -1,73 +1,132 @@
 # Crossword Game
 
-An interactive English vocabulary crossword game built with Next.js and TypeScript.
+An interactive English vocabulary crossword platform built with Next.js, TypeScript, Prisma, and Neon.
 
-The project is designed as a fun classroom-style learning experience where students can improve vocabulary through crossword puzzles instead of traditional memorization.
+The project is designed as a fun vocabulary-learning experience where users can create their own vocabulary lists and automatically generate crossword puzzles for study and review.
 
 ### Live Demo
 
-[Crossword Game Live Demo](https://crossword-green.vercel.app/)
+[Crossword Game](https://crossword-green.vercel.app/)
 
 ---
 
 # Features
 
-## Dynamic Crossword Generation
+## Custom Vocabulary Import
 
-- Programmatically generates crossword puzzles from dynamic English vocabulary data
-- Randomized vocabulary selection for every game
-- Automatically creates compact crossword layouts
-- Supports both horizontal and vertical word placement
-- Multiple generation attempts are used to improve crossword quality and density
-- Unused grid areas are automatically trimmed for a cleaner layout
-
-### Difficulty Modes
-
-- **Easy** → 60% letters revealed
-- **Hard** → 40% letters revealed
-- **Crazy** → 20% letters revealed
+- Import your own vocabulary list
+- Supports:
+  - commas
+  - spaces
+  - line breaks
+- Automatically cleans and normalizes input words
+- Recommended input size:
+  - 30–40 words
 
 ---
 
-## Responsive UI
+## Vocabulary Database System
 
-- Fully responsive design for desktop and mobile
-
-- Desktop layout:
-  - Crossword grid on the left
-  - Clue panel on the right
-
-- Mobile layout:
-  - Crossword grid on top
-  - Clues below
-
-- Optimized touch-friendly virtual keyboard
+- Prisma + Neon PostgreSQL integration
+- Imported vocabulary is persisted in database
+- Word bank automatically reloads on refresh
+- Re-importing words replaces the previous vocabulary set
 
 ---
 
-## Interactive Gameplay
+## Dictionary Integration
+
+Automatically fetches vocabulary information using Free Dictionary API:
+
+- Definitions
+- Phonetics
+- Pronunciation audio
+- Part of speech
+- Example sentences
+
+Users can also manually edit definitions directly inside the vocabulary list.
+
+---
+
+# Dynamic Crossword Generation
+
+- Automatically generates crossword puzzles from imported vocabulary
+- Randomly selects words from the vocabulary bank
+- Creates compact crossword layouts
+- Supports both across and down placements
+- Multiple generation attempts improve puzzle density and quality
+- Automatically trims unused grid space
+
+---
+
+# Gameplay Features
+
+## Reveal System
+
+- Fixed reveal mode:
+  - 20% letters revealed
+
+---
+
+## Interactive Crossword
 
 - Fill crossword cells directly
-- Mobile virtual keyboard support
+- Mobile-friendly virtual keyboard
 - Check / Uncheck answers
-- Show / Hide answers
+- Reveal / Hide answers
 - Interactive clue panel
-- Word pronunciation playback
-- Completion modal with confetti animation
+- Pronunciation playback
+- Hint system:
+  - definition
+  - first letter
+  - word length
+  - part of speech
 
 ---
 
-## Shareable Puzzle Links
+## Vocabulary List Modal
 
-- Copy Link feature
+- Alphabetically sorted vocabulary list
+- Displays:
+  - definition
+  - example sentence
+  - phonetic
+  - pronunciation audio
+- Editable definitions with database persistence
 
-- Shared links preserve:
-  - Exact crossword layout
-  - Revealed letters
-  - Difficulty level
-  - Puzzle structure
+---
 
-- Puzzle state is serialized and compressed into URL parameters using `lz-string`
+# Responsive UI
+
+Fully responsive design for desktop and mobile.
+
+## Desktop
+
+- Crossword grid on the left
+- Clue panel on the right
+
+## Mobile
+
+- Crossword grid on top
+- Clues below
+- Touch-friendly virtual keyboard
+
+---
+
+# Puzzle Sharing
+
+## Copy Link Feature
+
+Generated puzzles can be shared through URLs.
+
+Shared links preserve:
+
+- Crossword layout
+- Puzzle structure
+- Revealed letters
+- Crossword state
+
+Puzzle data is serialized and compressed using `lz-string`.
 
 ---
 
@@ -80,85 +139,82 @@ The project is designed as a fun classroom-style learning experience where stude
 - TypeScript
 - Tailwind CSS
 
-## Libraries
+## Backend / Database
+
+- Prisma 7
+- Neon PostgreSQL
+
+---
+
+# Libraries
 
 - canvas-confetti
 - react-icons
 - lz-string
+- @prisma/client
+- @prisma/adapter-pg
 
 ---
 
 # APIs
-
-## Datamuse API
-
-Used for generating related English vocabulary dynamically.
 
 ## Free Dictionary API
 
 Used for:
 
 - Definitions
+- Examples
+- Pronunciation
 - Phonetics
-- Pronunciation audio
-- Part of speech
+- Parts of speech
 
 ---
 
-# Main Functionalities
+# Core Systems
 
 ## Crossword Generator
 
-The crossword generation system:
+The crossword generation engine:
 
-- Dynamically places words into a crossword grid
-- Supports across and down placements
-- Scores candidate placements to create denser layouts
-- Automatically trims unused outer rows and columns
-- Runs multiple generation attempts to improve puzzle quality
-
----
-
-## Reveal System
-
-Different difficulty modes reveal different percentages of letters.
-
-Revealed cells are preserved when sharing puzzle links.
+- Dynamically places words into the grid
+- Supports across/down intersections
+- Scores candidate placements
+- Attempts multiple layouts
+- Trims unused rows and columns
+- Optimizes crossword compactness
 
 ---
 
 ## Virtual Keyboard
 
-Custom virtual keyboard system:
+Custom mobile-friendly keyboard system:
 
-- Mobile friendly
 - Auto positioning near selected cells
-- Auto close when clicking outside
+- Auto close on outside click
 - Touch optimized
+- Responsive behavior
 
 ---
 
-## Puzzle Sharing
+## Database Word Management
 
-Puzzle state is serialized and compressed into URL parameters.
+Vocabulary is persisted through Prisma + Neon:
 
-Shared puzzles preserve:
-
-- Crossword structure
-- Revealed letters
-- Difficulty
-- Exact layout positioning
+- Import words
+- Replace existing word bank
+- Edit definitions
+- Persist puzzle vocabulary across refreshes
 
 ---
 
 # Performance Optimizations
 
-- LocalStorage word cache
-- API fallback system
-- Crossword layout trimming
 - Multiple-attempt crossword generation
+- Dynamic grid trimming
 - Responsive grid scaling
-- Dynamic rendering optimization
+- Optimized rendering
+- Database persistence
+- Loading states and overlays
 
 ---
 
@@ -167,49 +223,11 @@ Shared puzzles preserve:
 Potential future features:
 
 - Smarter crossword generation algorithm
+- User accounts
+- Multiple vocabulary sets
+- Daily challenges
 - Multiplayer classroom mode
-- Supabase backend for short share links
+- Short share links
 - PWA support
-- Classroom leaderboard system
+- Leaderboard system
 - Timed challenge mode
-- Daily challenge puzzles
-
----
-
-# Local Development
-
-Install dependencies:
-
-```bash
-npm install
-```
-
-Run development server:
-
-```bash
-npm run dev
-```
-
-Build production version:
-
-```bash
-npm run build
-```
-
----
-
-# Deployment
-
-The project can be deployed directly to:
-
-- Vercel
-- Netlify
-- Cloudflare Pages
-
-No backend server is required for the current version.
-
----
-
-# License
-
-MIT

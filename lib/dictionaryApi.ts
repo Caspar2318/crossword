@@ -1,72 +1,87 @@
 import { VocabWord } from "@/types/word";
 
-type DictionaryApiResponse = {
-  word: string;
-  phonetic?: string;
-  phonetics?: {
-    text?: string;
-    audio?: string;
-  }[];
-  meanings?: {
+type FreeDictionaryResponse = {
+  word?: string;
+  entries?: {
     partOfSpeech?: string;
-    definitions?: {
+    pronunciations?: {
+      text?: string;
+      audio?: string;
+    }[];
+    senses?: {
       definition?: string;
-      example?: string;
+      examples?: string[];
     }[];
   }[];
 };
 
-function shortenDefinition(definition?: string) {
-  if (!definition) return undefined;
+function normalizeWord(word: string) {
+  return word.toLowerCase().replace(/[^a-z]/g, "");
+}
 
-  return definition
-    .split(";")[0]
-    .split(".")[0]
-    .replace(/\(.*?\)/g, "")
-    .trim();
+function cleanText(value?: string) {
+  const cleaned = value?.trim();
+  return cleaned || undefined;
 }
 
 export async function fetchWordInfo(word: string): Promise<VocabWord> {
+  const clean = normalizeWord(word);
+
   try {
     const res = await fetch(
-      `https://api.dictionaryapi.dev/api/v2/entries/en/${encodeURIComponent(
-        word,
-      )}`,
+      `https://freedictionaryapi.com/api/v1/entries/en/${encodeURIComponent(clean)}`,
     );
 
     if (!res.ok) {
       return {
-        word,
+        word: clean,
+        definition: clean,
+        clue: clean,
       };
     }
 
-    const data = (await res.json()) as DictionaryApiResponse[];
+    const data = (await res.json()) as FreeDictionaryResponse;
 
-    const first = data[0];
-    const firstMeaning = first?.meanings?.[0];
-    const firstDefinition = firstMeaning?.definitions?.[0];
+    const entries = data.entries ?? [];
+    const firstEntryWithDefinition = entries.find((entry) =>
+      entry.senses?.some((sense) => cleanText(sense.definition)),
+    );
 
-    const audioUrl =
-      first?.phonetics?.find((item) => item.audio)?.audio || undefined;
+    const firstSense = firstEntryWithDefinition?.senses?.find((sense) =>
+      cleanText(sense.definition),
+    );
 
-    const phonetic =
-      first?.phonetic ||
-      first?.phonetics?.find((item) => item.text)?.text ||
-      undefined;
+    const firstEntryWithPronunciation = entries.find((entry) =>
+      entry.pronunciations?.some((item) => item.text || item.audio),
+    );
 
-    const definition = shortenDefinition(firstDefinition?.definition);
+    const definition = cleanText(firstSense?.definition) || clean;
+    const example = cleanText(firstSense?.examples?.[0]);
+
+    const phonetic = cleanText(
+      firstEntryWithPronunciation?.pronunciations?.find((item) => item.text)
+        ?.text,
+    );
+
+    const audioUrl = cleanText(
+      firstEntryWithPronunciation?.pronunciations?.find((item) => item.audio)
+        ?.audio,
+    );
 
     return {
-      word: first?.word?.toLowerCase() || word.toLowerCase(),
+      word: normalizeWord(data.word || clean),
       definition,
-      example: firstDefinition?.example,
+      clue: definition,
+      example,
       phonetic,
       audioUrl,
-      partOfSpeech: firstMeaning?.partOfSpeech,
+      partOfSpeech: firstEntryWithDefinition?.partOfSpeech,
     };
   } catch {
     return {
-      word: word.toLowerCase(),
+      word: clean,
+      definition: clean,
+      clue: clean,
     };
   }
 }
